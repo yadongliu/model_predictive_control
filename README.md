@@ -3,6 +3,54 @@ Self-Driving Car Engineer Nanodegree Program
 
 ---
 
+## Project Description
+
+The vehicle model used by this project is a non-linear kinamatic bicycle model. It does not
+take into consideration dynamic factor such inertia, drag etc. The vehicle state is represented by 
+its position _(px, py)_, heading direction _psi_, its speed _v_, its cross track error _cte_, and
+heading angle differential _epsi_. The actuation is represented by steering angle _delta_ and
+throttle _a_. 
+
+The following equation is used to update the vehicle state from timestep _t_ to _t+1_:
+```
+      x(t+1) = x(t) + v(t) * cos(psi(t)) * dt;
+      y(t+1) = y(t) + v(t) * sin(psi(t)) * dt);
+      psi(t+1) = psi(t) + v(t) * delta(t) / Lf * dt;
+      v(t+1) = v(t) + a(t) * dt;
+      cte(t+1) = f(t) - y(t) + v(t) * sin(epsi(t)) * dt;
+      epsi(t+1) = psi(t) - psides(t) + v(t) * delta(t) / Lf * dt;
+```
+where _dt_ is the time step, _Lf_ is obtained by measuring the radius formed by running the vehicle in the
+simulator around in a circle with a constant steering angle and velocity on a
+flat terrain. _f(t)_ is x(t) calculated to the fitted polynomial, _psides(t)_ is the heading differential 
+based on the fitted polynomial.
+
+### Polynomial Fitting
+
+The waypoints which describes the tracks in front of the vehicle is first transformed from map coordinates
+to the vehicle coordinates via the following code in main.cpp:
+
+```
+          // transform waypoints to car local coord
+          int size = ptsx.size();
+          Eigen::VectorXd ptsx_car = Eigen::VectorXd(size);
+          Eigen::VectorXd ptsy_car = Eigen::VectorXd(size);
+          for(int i=0; i < size; i++) {
+            ptsx_car[i] = (ptsx[i] - px) * cos(-psi) - (ptsy[i] - py) * sin(-psi);
+            ptsy_car[i] = (ptsx[i] - px) * sin(-psi) + (ptsy[i] - py) * cos(-psi);
+          }
+```
+
+The waypoints (the yellow line) is then fitted to a polynomial to the third order. The coefficients of the 
+polynomial is passed to FG_eval to set up cost function and constraints. These were then used to an ipopt 
+solver to give us the solution on actuation (steering and throttle) and predicted vehicle positions ahead. 
+These predicted positions (px, py) are passed back to the car simulator for visual display (the green line).  
+
+_N * dt_ dictates how far ahead does the model look in order to make prediction on steering angle and 
+throttle calculations. Given that we need to account for 100ms of actuation latency, the value of _dt_
+probably should be close to 0.1. And looking ahead 15 to 20 steps seem to 
+provide reasonable result in testing. 
+
 ## Dependencies
 
 * cmake >= 3.5

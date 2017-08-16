@@ -6,8 +6,8 @@
 using CppAD::AD;
 
 // TODO: Set the timestep length and duration
-size_t N = 20;
-double dt = 0.05;
+size_t N = 15;
+double dt = 0.1;
 
 // This value assumes the model presented in the classroom is used.
 //
@@ -30,6 +30,10 @@ const int epsi0_idx = 5*N;
 const int delta0_idx = 6*N;
 const int a0_idx = 7*N - 1;
 
+const double target_v = 25; // target speed
+const double WEIGHT_V = 1.0;
+const double WEIGHT_CTE = 10.0;
+
 class FG_eval {
  public:
   // Fitted polynomial coefficients
@@ -43,11 +47,10 @@ class FG_eval {
     fg[0] = 0;
 
     // cost based on cte, epsi, and speed
-    double target_v = 25;
     for(int i = 0; i < N; i++) {
       fg[0] += CppAD::pow(vars[cte0_idx + i], 2);
-      fg[0] += CppAD::pow(vars[epsi0_idx + i], 2);
-      fg[0] += CppAD::pow(vars[v0_idx + i] - target_v, 2);
+      fg[0] += WEIGHT_CTE * CppAD::pow(vars[epsi0_idx + i], 2);
+      fg[0] += WEIGHT_V * CppAD::pow(vars[v0_idx + i] - target_v, 2);
     }
 
     // cost based on value of actuations.
@@ -111,7 +114,6 @@ MPC::~MPC() {}
 
 vector<double> MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs) {
   bool ok = true;
-  size_t i;
   typedef CPPAD_TESTVECTOR(double) Dvector;
 
   // Set the number of model variables (includes both states and inputs).

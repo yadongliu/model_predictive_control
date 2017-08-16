@@ -113,15 +113,15 @@ int main() {
           * Both are in between [-1, 1].
           *
           */
-          double steer_value = - solved_state[0];
+          // NOTE: Remember to divide by deg2rad(25) before you send the steering value back.
+          // Otherwise the values will be in between [-deg2rad(25), deg2rad(25] instead of [-1, 1].
+          double steer_value = - solved_state[0] / deg2rad(25);
           double throttle_value = solved_state[1];
 
           cout << "steer_value: " << steer_value << " & throttle_value: "<< throttle_value << endl;
 
           json msgJson;
-          // NOTE: Remember to divide by deg2rad(25) before you send the steering value back.
-          // Otherwise the values will be in between [-deg2rad(25), deg2rad(25] instead of [-1, 1].
-          msgJson["steering_angle"] = steer_value ; /// deg2rad(25);
+          msgJson["steering_angle"] = steer_value;
           msgJson["throttle"] = throttle_value;
 
           //Display the MPC predicted trajectory 

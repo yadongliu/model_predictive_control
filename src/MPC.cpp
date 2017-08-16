@@ -30,9 +30,10 @@ const int epsi0_idx = 5*N;
 const int delta0_idx = 6*N;
 const int a0_idx = 7*N - 1;
 
-const double target_v = 25; // target speed
+const double target_v = 50; // target speed
 const double WEIGHT_V = 1.0;
 const double WEIGHT_CTE = 10.0;
+const double WEIGHT_STEER = 1000.0;
 
 class FG_eval {
  public:
@@ -55,7 +56,7 @@ class FG_eval {
 
     // cost based on value of actuations.
     for (int i = 0; i < N - 1; i++) {
-      fg[0] += CppAD::pow(vars[delta0_idx + i], 2);
+      fg[0] += WEIGHT_STEER * CppAD::pow(vars[delta0_idx + i], 2);
       fg[0] += CppAD::pow(vars[a0_idx + i], 2);
     }
 
@@ -235,7 +236,10 @@ Eigen::VectorXd MPC::GetState(Eigen::VectorXd coeffs, double v, double steering_
   // Vehicle model
   Eigen::VectorXd result = Eigen::VectorXd(6);
 
-  double cte = coeffs[0];
+  // cte is the deviation from center y
+  // after local coord transformation, vehicle is at (0, 0)
+  double px = 0.0, py = 0.0;
+  double cte = (coeffs[0]+coeffs[1]*px+coeffs[2]*px*px+coeffs[3]*px*px*px) - py;
   double epsi = - atan(coeffs[1]);
   double px_pred = v * dt;
   double py_pred = 0;

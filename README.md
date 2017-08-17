@@ -52,7 +52,12 @@ probably should be close to 0.1. And looking ahead 15 to 20 steps seem to
 provide reasonable result in testing. 
 
 Latency in actuation is accounted for by predicting the vehicle state ahead by 0.1s (100ms) before
-feeding it to the solver. Latency related code is in the function: _MPC::GetState()_ 
+feeding it to the solver. Latency related code is in the function: _MPC::GetState()_
+
+Screenshots of MPC in action:
+
+![jpg](images/mpc_car1.jpg)
+![jpg](images/mpc_car2.jpg)
 
 ## Dependencies
 
